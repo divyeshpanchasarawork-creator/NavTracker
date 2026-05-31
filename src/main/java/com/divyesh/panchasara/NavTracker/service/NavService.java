@@ -9,5 +9,5 @@ import java.time.LocalDate;
 public interface NavService {
     ResponseFund getLatest(String fundCode);
     ResponseFundHistory getHistory(String fundCode, LocalDate fromDate, LocalDate toDate);
-    ResponseFundReturns getReturns(String funcCode, LocalDate beforeDate, LocalDate afterDate);
+    ResponseFundReturns getReturns(String fundCode, LocalDate beforeDate, LocalDate afterDate);
 }
