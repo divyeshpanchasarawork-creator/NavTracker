@@ -9,9 +9,7 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 @Service
 public class FileServiceImpl implements FileService{
@@ -19,6 +17,13 @@ public class FileServiceImpl implements FileService{
     private final FundRepository fundRepository;
     private static final DateTimeFormatter NAV_DATE_FORMATTER =
             DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH);
+
+    private static final String COL_SCHEME_CODE        = "schemecode";
+    private static final String COL_SCHEME_NAME        = "schemename";
+    private static final String COL_ISIN_DIV_PAYOUT    = "isindivpayout_isingrowth";
+    private static final String COL_ISIN_DIV_REINVEST  = "isindivreinvestment";
+    private static final String COL_NAV                = "netassetvalue";
+    private static final String COL_DATE               = "date";
 
     public FileServiceImpl(FundRepository fundRepository) {
         this.fundRepository = fundRepository;
@@ -38,7 +43,9 @@ public class FileServiceImpl implements FileService{
 
             String[] header = getHeader(firstLine);
 
-            List<FundEntity> funds = readData(br, header.length);
+            Map<String, Integer> headerMapping = createHeaderMapping(header);
+
+            List<FundEntity> funds = readData(br, header.length, headerMapping);
 
             for (FundEntity fund : funds) {
                 if (!fundRepository.existsBySchemeCodeAndNavDate(fund.getSchemeCode(), fund.getNavDate())) {
@@ -50,6 +57,14 @@ public class FileServiceImpl implements FileService{
         }
     }
 
+    private Map<String, Integer> createHeaderMapping(String[] header) {
+        Map<String, Integer> headerMapping = new HashMap<>();
+
+        for (int i = 0; i < header.length; i++) headerMapping.put(header[i], i);
+
+        return headerMapping;
+    }
+
     private void deleteFile(String path) throws RuntimeException {
         File file = new File(path);
 
@@ -59,12 +74,13 @@ public class FileServiceImpl implements FileService{
     }
 
     private String[] getHeader(String line) {
+        line = line.toLowerCase();
         line = line.replace(" ", "");
         line = line.replace("/", "_");
         return line.split(";");
     }
 
-    private List<FundEntity> readData(BufferedReader bufferedReader, int length) throws IOException {
+    private List<FundEntity> readData(BufferedReader bufferedReader, int length, Map<String, Integer> headerMapping) throws IOException {
         List<FundEntity> fundEntityList = new ArrayList<>();
 
         String line;
@@ -74,7 +90,7 @@ public class FileServiceImpl implements FileService{
                 String[] data = line.split(";", -1);
 
                 if (data.length == length) {
-                    fundEntityList.add(convertDataToEntity(data));
+                    fundEntityList.add(convertDataToEntity(data, headerMapping));
                 }
             }
         }
@@ -82,27 +98,31 @@ public class FileServiceImpl implements FileService{
         return fundEntityList;
     }
 
-    private FundEntity convertDataToEntity(String[] data) {
+    private FundEntity convertDataToEntity(String[] data, Map<String, Integer> headerMapping) {
         FundEntity fundEntity = new FundEntity();
 
-        fundEntity.setSchemeCode(nullIfBlankOrDash(data[0]));
-        fundEntity.setIsinDivPayoutGrowth(nullIfBlankOrDash(data[1]));
-        fundEntity.setIsinDivReinvestment(nullIfBlankOrDash(data[2]));
-        fundEntity.setSchemeName(nullIfBlankOrDash(data[3]));
+        fundEntity.setSchemeCode(extract(data, headerMapping, COL_SCHEME_CODE));
+        fundEntity.setIsinDivPayoutGrowth(extract(data, headerMapping, COL_ISIN_DIV_PAYOUT));
+        fundEntity.setIsinDivReinvestment(extract(data, headerMapping, COL_ISIN_DIV_REINVEST));
+        fundEntity.setSchemeName(extract(data, headerMapping, COL_SCHEME_NAME));
 
-        String nav = nullIfBlankOrDash(data[4]);
+        String nav = extract(data, headerMapping, COL_NAV);
         if (nav != null) {
             fundEntity.setNetAssetValue(new BigDecimal(nav));
         }
 
-        String navDate = nullIfBlankOrDash(data[5]);
+        String navDate = extract(data, headerMapping, COL_DATE);
         if (navDate != null) {
-            fundEntity.setNavDate(
-                    LocalDate.parse(navDate, NAV_DATE_FORMATTER)
-            );
+            fundEntity.setNavDate(LocalDate.parse(navDate, NAV_DATE_FORMATTER));
         }
 
         return fundEntity;
+    }
+
+    private String extract(String[] data, Map<String, Integer> headerMapping, String column) {
+        Integer index = headerMapping.get(column);
+        if (index == null || index >= data.length) return null;
+        return nullIfBlankOrDash(data[index]);
     }
 
     private String nullIfBlankOrDash(String value) {
