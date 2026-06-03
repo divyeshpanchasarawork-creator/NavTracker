@@ -7,6 +7,8 @@ import com.divyesh.panchasara.NavTracker.entity.FundEntity;
 import com.divyesh.panchasara.NavTracker.repository.FundRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,7 @@ public class NavServiceImpl implements NavService {
 
         if (fundEntityList == null || fundEntityList.isEmpty()) return null;
 
-        Map<LocalDate, Double> navHistory = new TreeMap<>();
+        Map<LocalDate, BigDecimal> navHistory = new TreeMap<>();
         for (FundEntity fundEntity: fundEntityList) {
             navHistory.put(fundEntity.getNavDate(), fundEntity.getNetAssetValue());
         }
@@ -67,17 +69,23 @@ public class NavServiceImpl implements NavService {
 
         if (beforeDateEntity == null || afterDateEntity == null) return null;
 
-        ResponseFundReturns responseFundReturns = new ResponseFundReturns();
+        BigDecimal beforeNav = beforeDateEntity.getNetAssetValue();
+        BigDecimal afterNav = afterDateEntity.getNetAssetValue();
 
+        if (beforeNav == null || beforeNav.compareTo(BigDecimal.ZERO) <= 0 || afterNav == null) {
+            return null;
+        }
+
+        ResponseFundReturns responseFundReturns = new ResponseFundReturns();
         responseFundReturns.setFundCode(fundCode);
         responseFundReturns.setFundName(beforeDateEntity.getSchemeName());
         responseFundReturns.setBeforeDate(beforeDate);
         responseFundReturns.setAfterDate(afterDate);
 
-        double returns = ((afterDateEntity.getNetAssetValue() - beforeDateEntity.getNetAssetValue()) * 100 )/ beforeDateEntity.getNetAssetValue();
-        returns = Math.round(returns * 10000.0) / 10000.0;
+        BigDecimal returns = afterNav.subtract(beforeNav)
+                .divide(beforeNav, 6, RoundingMode.HALF_UP);
 
-        responseFundReturns.setReturns(returns);
+        responseFundReturns.setReturns(returns.multiply(new BigDecimal(100)));
 
         return responseFundReturns;
     }

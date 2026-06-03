@@ -1,5 +1,6 @@
 package com.divyesh.panchasara.NavTracker.beans;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ResponseFundReturns {
@@ -7,7 +8,7 @@ public class ResponseFundReturns {
     private String fundName;
     private LocalDate beforeDate;
     private LocalDate afterDate;
-    private double returns;
+    private BigDecimal returns;
 
     public ResponseFundReturns() {
     }
@@ -44,11 +45,11 @@ public class ResponseFundReturns {
         this.afterDate = afterDate;
     }
 
-    public double getReturns() {
+    public BigDecimal getReturns() {
         return returns;
     }
 
-    public void setReturns(double returns) {
+    public void setReturns(BigDecimal returns) {
         this.returns = returns;
     }
 }

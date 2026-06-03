@@ -6,11 +6,12 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
+import java.util.List;
+import java.util.ArrayList;
 
 @Service
 public class FileServiceImpl implements FileService{
@@ -91,7 +92,7 @@ public class FileServiceImpl implements FileService{
 
         String nav = nullIfBlankOrDash(data[4]);
         if (nav != null) {
-            fundEntity.setNetAssetValue(Double.parseDouble(nav));
+            fundEntity.setNetAssetValue(new BigDecimal(nav));
         }
 
         String navDate = nullIfBlankOrDash(data[5]);
