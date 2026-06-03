@@ -1,12 +1,13 @@
 package com.divyesh.panchasara.NavTracker.beans;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class ResponseFund {
     private String fundCode;
     private String fundName;
     private LocalDate navDate;
-    private Double netAssetValue;
+    private BigDecimal netAssetValue;
 
     public ResponseFund() {
     }
@@ -27,11 +28,11 @@ public class ResponseFund {
         this.fundName = fundName;
     }
 
-    public Double getNetAssetValue() {
+    public BigDecimal getNetAssetValue() {
         return netAssetValue;
     }
 
-    public void setNetAssetValue(Double netAssetValue) {
+    public void setNetAssetValue(BigDecimal netAssetValue) {
         this.netAssetValue = netAssetValue;
     }
 

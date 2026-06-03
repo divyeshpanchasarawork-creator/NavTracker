@@ -1,5 +1,6 @@
 package com.divyesh.panchasara.NavTracker.beans;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ public class ResponseFundHistory {
     private String fundName;
     private LocalDate fromDate;
     private LocalDate toDate;
-    private Map<LocalDate, Double> history;
+    private Map<LocalDate, BigDecimal> history;
 
     public ResponseFundHistory() {
     }
@@ -45,11 +46,11 @@ public class ResponseFundHistory {
         this.toDate = toDate;
     }
 
-    public Map<LocalDate, Double> getHistory() {
+    public Map<LocalDate, BigDecimal> getHistory() {
         return history;
     }
 
-    public void setHistory(Map<LocalDate, Double> history) {
+    public void setHistory(Map<LocalDate, BigDecimal> history) {
         this.history = history;
     }
 }

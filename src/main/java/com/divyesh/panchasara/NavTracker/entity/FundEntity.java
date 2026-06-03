@@ -2,6 +2,7 @@ package com.divyesh.panchasara.NavTracker.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -17,7 +18,9 @@ public class FundEntity {
     private String isinDivPayoutGrowth;
     private String isinDivReinvestment;
     private String schemeName;
-    private Double netAssetValue;
+
+    @Column(precision = 20, scale = 6)
+    private BigDecimal netAssetValue;
     private LocalDate navDate;
 
     public FundEntity() {
@@ -63,11 +66,11 @@ public class FundEntity {
         this.schemeName = schemeName;
     }
 
-    public Double getNetAssetValue() {
+    public BigDecimal getNetAssetValue() {
         return netAssetValue;
     }
 
-    public void setNetAssetValue(Double netAssetValue) {
+    public void setNetAssetValue(BigDecimal netAssetValue) {
         this.netAssetValue = netAssetValue;
     }
 
