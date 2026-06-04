@@ -31,4 +31,10 @@ public interface FundRepository extends JpaRepository<FundEntity, UUID> {
             @Param("fundCode") String fundCode,
             @Param("navDate") LocalDate navDate
     );
+
+    @Query(value = "SELECT * from fund_entity f WHERE f.scheme_code = :fundCode AND f.nav_date <= :navDate ORDER BY f.nav_date DESC LIMIT 1", nativeQuery = true)
+    FundEntity getNavOfDateOrLastUpdatedNav(
+            @Param("fundCode") String fundCode,
+            @Param("navDate") LocalDate navDate
+    );
 }
