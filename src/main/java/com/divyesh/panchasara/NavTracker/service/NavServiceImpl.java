@@ -64,8 +64,8 @@ public class NavServiceImpl implements NavService {
 
     @Override
     public ResponseFundReturns getReturns(String fundCode, LocalDate beforeDate, LocalDate afterDate) {
-        FundEntity beforeDateEntity = fundRepository.getNavOfDate(fundCode, beforeDate);
-        FundEntity afterDateEntity = fundRepository.getNavOfDate(fundCode, afterDate);
+        FundEntity beforeDateEntity = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, beforeDate);
+        FundEntity afterDateEntity = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, afterDate);
 
         if (beforeDateEntity == null || afterDateEntity == null) return null;
 
