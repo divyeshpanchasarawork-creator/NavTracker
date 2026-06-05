@@ -1,4 +1,4 @@
-package com.divyesh.panchasara.NavTracker.beans;
+package com.divyesh.panchasara.NavTracker.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
