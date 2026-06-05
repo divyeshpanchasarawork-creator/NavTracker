@@ -1,9 +1,12 @@
 package com.divyesh.panchasara.NavTracker.service;
 
-import com.divyesh.panchasara.NavTracker.beans.ResponseFund;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundHistory;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundReturns;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFund;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundHistory;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundReturns;
 import com.divyesh.panchasara.NavTracker.entity.FundEntity;
+import com.divyesh.panchasara.NavTracker.exception.FundNotFoundException;
+import com.divyesh.panchasara.NavTracker.exception.InvalidDateRangeException;
+import com.divyesh.panchasara.NavTracker.exception.InvalidNavDataException;
 import com.divyesh.panchasara.NavTracker.repository.FundRepository;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +30,7 @@ public class NavServiceImpl implements NavService {
     public ResponseFund getLatest(String fundCode) {
         FundEntity fundEntity = fundRepository.getLatest(fundCode);
 
-        if (fundEntity == null) return null;
+        if (fundEntity == null) throw new FundNotFoundException(fundCode);
 
         ResponseFund responseFund = new ResponseFund();
         responseFund.setFundCode(fundCode);
@@ -40,9 +43,11 @@ public class NavServiceImpl implements NavService {
 
     @Override
     public ResponseFundHistory getHistory(String fundCode, LocalDate fromDate, LocalDate toDate) {
+        if (!fromDate.isBefore(toDate)) throw new InvalidDateRangeException(fromDate, toDate);
+
         List<FundEntity> fundEntityList = fundRepository.getHistory(fundCode, fromDate, toDate);
 
-        if (fundEntityList == null || fundEntityList.isEmpty()) return null;
+        if (fundEntityList == null || fundEntityList.isEmpty()) throw new FundNotFoundException(fundCode);
 
         Map<LocalDate, BigDecimal> navHistory = new TreeMap<>();
         for (FundEntity fundEntity: fundEntityList) {
@@ -64,16 +69,18 @@ public class NavServiceImpl implements NavService {
 
     @Override
     public ResponseFundReturns getReturns(String fundCode, LocalDate beforeDate, LocalDate afterDate) {
-        FundEntity beforeDateEntity = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, beforeDate);
-        FundEntity afterDateEntity = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, afterDate);
+        if (!beforeDate.isBefore(afterDate)) throw new InvalidDateRangeException(beforeDate, afterDate);
 
-        if (beforeDateEntity == null || afterDateEntity == null) return null;
+        FundEntity beforeDateEntity = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, beforeDate);
+        FundEntity afterDateEntity  = fundRepository.getNavOfDateOrLastUpdatedNav(fundCode, afterDate);
+
+        if (beforeDateEntity == null || afterDateEntity == null) throw new FundNotFoundException(fundCode);
 
         BigDecimal beforeNav = beforeDateEntity.getNetAssetValue();
         BigDecimal afterNav = afterDateEntity.getNetAssetValue();
 
-        if (beforeNav == null || beforeNav.compareTo(BigDecimal.ZERO) <= 0 || afterNav == null) {
-            return null;
+        if (beforeNav.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidNavDataException(fundCode, beforeDate);
         }
 
         ResponseFundReturns responseFundReturns = new ResponseFundReturns();

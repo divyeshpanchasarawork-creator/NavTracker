@@ -1,8 +1,8 @@
 package com.divyesh.panchasara.NavTracker.service;
 
-import com.divyesh.panchasara.NavTracker.beans.ResponseFund;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundHistory;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundReturns;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFund;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundHistory;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundReturns;
 
 import java.time.LocalDate;
 

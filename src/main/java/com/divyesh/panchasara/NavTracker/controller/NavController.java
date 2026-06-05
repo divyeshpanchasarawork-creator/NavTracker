@@ -1,17 +1,20 @@
 package com.divyesh.panchasara.NavTracker.controller;
 
-import com.divyesh.panchasara.NavTracker.beans.ResponseFund;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundHistory;
-import com.divyesh.panchasara.NavTracker.beans.ResponseFundReturns;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFund;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundHistory;
+import com.divyesh.panchasara.NavTracker.dto.ResponseFundReturns;
 import com.divyesh.panchasara.NavTracker.service.NavService;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/funds")
+@Validated
 public class NavController {
 
     private final NavService service;
@@ -22,38 +25,26 @@ public class NavController {
 
     @GetMapping("/{fundCode}/latest-nav")
     public ResponseEntity<ResponseFund> getLatestNav(
-            @PathVariable String fundCode
+            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode
     ) {
-        ResponseFund responseFund = service.getLatest(fundCode);
-
-        if (responseFund == null) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(responseFund);
+        return ResponseEntity.ok(service.getLatest(fundCode));
     }
 
     @GetMapping("/{fundCode}/history")
     public ResponseEntity<ResponseFundHistory> getHistory(
-            @PathVariable String fundCode,
+            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
     ) {
-        ResponseFundHistory responseFundHistory = service.getHistory(fundCode, fromDate, toDate);
-
-        if (responseFundHistory == null) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(responseFundHistory);
+        return ResponseEntity.ok(service.getHistory(fundCode, fromDate, toDate));
     }
 
     @GetMapping("/{fundCode}/returns")
     public ResponseEntity<ResponseFundReturns> getReturns(
-            @PathVariable String fundCode,
+            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate afterDate
     ) {
-        ResponseFundReturns responseFundReturns = service.getReturns(fundCode, beforeDate, afterDate);
-
-        if (responseFundReturns == null) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(responseFundReturns);
+        return ResponseEntity.ok(service.getReturns(fundCode, beforeDate, afterDate));
     }
 }
