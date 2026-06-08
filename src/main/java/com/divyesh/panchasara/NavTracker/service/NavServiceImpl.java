@@ -58,7 +58,7 @@ public class NavServiceImpl implements NavService {
 
         ResponseFundHistory responseFundHistory = new ResponseFundHistory();
 
-        responseFundHistory.setFundCode(fundEntity.getSchemeCode());
+        responseFundHistory.setFundCode(fundCode);
         responseFundHistory.setFundName(fundEntity.getSchemeName());
         responseFundHistory.setFromDate(fromDate);
         responseFundHistory.setToDate(toDate);

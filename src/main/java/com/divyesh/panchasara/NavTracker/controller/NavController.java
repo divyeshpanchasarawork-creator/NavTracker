@@ -25,14 +25,18 @@ public class NavController {
 
     @GetMapping("/{fundCode}/latest-nav")
     public ResponseEntity<ResponseFund> getLatestNav(
-            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode
+            @PathVariable
+            @Pattern(regexp = "^(?i)[A-Z0-9]{12}$", message = "Invalid fund code format")
+            String fundCode
     ) {
         return ResponseEntity.ok(service.getLatest(fundCode));
     }
 
     @GetMapping("/{fundCode}/history")
     public ResponseEntity<ResponseFundHistory> getHistory(
-            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode,
+            @PathVariable
+            @Pattern(regexp = "^(?i)[A-Z0-9]{12}$", message = "Invalid fund code format")
+            String fundCode,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
     ) {
@@ -41,7 +45,9 @@ public class NavController {
 
     @GetMapping("/{fundCode}/returns")
     public ResponseEntity<ResponseFundReturns> getReturns(
-            @PathVariable @Pattern(regexp = "^[0-9]{6}$", message = "Invalid fund code format") String fundCode,
+            @PathVariable
+            @Pattern(regexp = "^(?i)[A-Z0-9]{12}$", message = "Invalid fund code format")
+            String fundCode,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate afterDate
     ) {

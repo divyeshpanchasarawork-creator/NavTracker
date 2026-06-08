@@ -47,8 +47,8 @@ public class FileServiceImpl implements FileService{
 
             List<FundEntity> funds = readData(br, header.length, headerMapping);
 
-            for (FundEntity fund : funds) {
-                if (!fundRepository.existsBySchemeCodeAndNavDate(fund.getSchemeCode(), fund.getNavDate())) {
+            for (FundEntity fund: funds) {
+                if (!fundRepository.existsByIsinDivPayoutGrowthAndNavDate(fund.getIsinDivPayoutGrowth(), fund.getNavDate())) {
                     fundRepository.save(fund);
                 }
             }
@@ -83,14 +83,19 @@ public class FileServiceImpl implements FileService{
     private List<FundEntity> readData(BufferedReader bufferedReader, int length, Map<String, Integer> headerMapping) throws IOException {
         List<FundEntity> fundEntityList = new ArrayList<>();
 
+        Set<String> keySet = new HashSet<>();
+
         String line;
 
         while ((line = bufferedReader.readLine()) != null) {
             if (!line.isBlank() && line.contains(";")) {
                 String[] data = line.split(";", -1);
 
-                if (data.length == length) {
+                String key = data[headerMapping.get(COL_ISIN_DIV_PAYOUT)].trim() + data[headerMapping.get(COL_DATE)].trim();
+
+                if (data.length == length && !keySet.contains(key)) {
                     fundEntityList.add(convertDataToEntity(data, headerMapping));
+                    keySet.add(key);
                 }
             }
         }
