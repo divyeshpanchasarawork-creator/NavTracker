@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NavTracker Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen font-sans p-6">
+
+<div class="max-w-6xl mx-auto space-y-8">
+
+    <header class="border-b border-slate-200 pb-4">
+        <h1 class="text-3xl font-black text-blue-600 tracking-tight">NavTracker Engine</h1>
+        <p class="text-sm text-slate-500 mt-1">Production monitoring dashboard for daily AMFI Mutual Fund trends</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <div class="space-y-6 lg:col-span-1">
+
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-slate-200">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">1. Bulk AMFI Ingestion</h2>
+                <form id="uploadForm" class="space-y-3">
+                    <label class="block">
+                        <span class="sr-only">Choose AMFI text file</span>
+                        <input type="file" id="amfiFile" accept=".txt" required
+                               class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                    </label>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm transition">
+                        Upload & Parse File
+                    </button>
+                </form>
+                <div id="uploadStatus" class="mt-2 text-xs font-medium hidden"></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-xl shadow-xs border border-slate-200 space-y-6">
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">2. Latest NAV Inquiry</h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="latestCode" placeholder="e.g. INF579M01621" maxlength="12"
+                               class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-blue-500 uppercase">
+                        <button id="btnLatest" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 rounded-md transition">
+                            Fetch
+                        </button>
+                    </div>
+                    <div id="latestResult" class="mt-3 text-sm hidden p-3 bg-slate-50 rounded-lg border border-slate-200"></div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">3. Growth Performance Returns</h2>
+                    <div class="space-y-3">
+                        <input type="text" id="returnsCode" placeholder="e.g. INF579M01621" maxlength="12"
+                               class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-blue-500 uppercase">
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="text-xs text-slate-500">Before Date
+                                <input type="date" id="beforeDate" class="w-full mt-1 px-2 py-1 border border-slate-300 rounded-md text-sm">
+                            </label>
+                            <label class="text-xs text-slate-500">After Date
+                                <input type="date" id="afterDate" class="w-full mt-1 px-2 py-1 border border-slate-300 rounded-md text-sm">
+                            </label>
+                        </div>
+                        <button id="btnReturns" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-md transition">
+                            Calculate Absolute Yield
+                        </button>
+                    </div>
+                    <div id="returnsResult" class="mt-3 text-sm hidden p-3 bg-emerald-50 text-emerald-900 rounded-lg border border-emerald-200"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-xs border border-slate-200 flex flex-col h-full">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">4. Historical Time-Series Visualizer</h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end mb-6">
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">Fund Code</label>
+                        <input type="text" id="historyCode" value="INF579M01621" maxlength="12"
+                               class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-blue-500 uppercase">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">From Date</label>
+                        <input type="date" id="historyFrom" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-500 block mb-1">To Date</label>
+                        <input type="date" id="historyTo" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm">
+                    </div>
+                    <button id="btnHistory" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 rounded-md text-sm transition">
+                        Render Line Chart
+                    </button>
+                </div>
+
+                <div class="relative flex-1 min-h-[350px] bg-slate-50 rounded-xl border border-dashed border-slate-200 flex items-center justify-center p-4">
+                    <div id="chartPlaceholder" class="text-slate-400 text-sm text-center">
+                        <span class="block text-3xl mb-1">📊</span> Execute history lookup parameters to load timeline chart configurations.
+                    </div>
+                    <canvas id="historyChart" class="hidden w-full h-full"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Initialize baseline tracking variables
+    document.getElementById('historyFrom').value = '2026-06-01';
+    document.getElementById('historyTo').value = '2026-06-05';
+    document.getElementById('beforeDate').value = '2026-04-21';
+    document.getElementById('afterDate').value = '2026-06-01';
+
+    let chartInstance = null;
+
+    // Core validation strict rule: Exactly 12 alphanumeric characters
+    const isinRegex = /^[A-Z0-9]{12}$/i;
+
+    async function handleResponse(response) {
+        const isJson = response.headers.get('content-type')?.includes('application/json');
+        const payload = isJson ? await response.json() : null;
+
+        if (!response.ok) {
+            const errorMsg = (payload && payload.message) ? payload.message : "Server error encountered.";
+            throw new Error(errorMsg);
+        }
+        return payload;
+    }
+
+    // ─── 1. BULK FILE UPLOAD ───────────────────────
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusDiv = document.getElementById('uploadStatus');
+        const fileInput = document.getElementById('amfiFile');
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        statusDiv.className = "mt-2 text-xs font-medium text-blue-600 animate-pulse block";
+        statusDiv.textContent = "Processing batch records inside parsing engine...";
+
+        try {
+            const response = await fetch('/nav/bulk', { method: 'POST', body: formData });
+            await handleResponse(response);
+
+            statusDiv.className = "mt-2 text-xs font-medium text-emerald-600 block";
+            statusDiv.textContent = "Bulk data records successfully synced!";
+        } catch (err) {
+            statusDiv.className = "mt-2 text-xs font-medium text-red-600 block";
+            statusDiv.textContent = err.message;
+        }
+    });
+
+    // ─── 2. GET LATEST NAV LOOKUP ──────────────────
+    document.getElementById('btnLatest').addEventListener('click', async () => {
+        const code = document.getElementById('latestCode').value.trim();
+        const resultBox = document.getElementById('latestResult');
+
+        if(!isinRegex.test(code)) {
+            return alert("Code format invalid! Must be exactly 12 alphanumeric characters (e.g., INF579M01621).");
+        }
+
+        try {
+            const res = await fetch(`/funds/${code}/latest-nav`);
+            const data = await handleResponse(res);
+
+            resultBox.className = "mt-3 text-sm block p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1";
+            resultBox.innerHTML = `
+                    <div class="font-bold text-slate-900">${data.fundName || 'Mutual Fund'}</div>
+                    <div class="text-xs text-slate-500">Scheme Code: ${data.fundCode}</div>
+                    <div class="text-lg font-black text-blue-600 mt-1">₹${data.netAssetValue}</div>
+                    <div class="text-[10px] text-slate-400">As of date: ${data.navDate}</div>
+                `;
+        } catch (err) {
+            resultBox.className = "mt-3 text-sm block p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg";
+            resultBox.textContent = err.message;
+        }
+    });
+
+    // ─── 3. GET TIMELINE RETURNS ─────────────────────
+    document.getElementById('btnReturns').addEventListener('click', async () => {
+        const code = document.getElementById('returnsCode').value.trim();
+        const before = document.getElementById('beforeDate').value;
+        const after = document.getElementById('afterDate').value;
+        const resultBox = document.getElementById('returnsResult');
+
+        if(!isinRegex.test(code) || !before || !after) {
+            return alert("Complete parameters. Ensure the Fund Code is exactly 12 characters.");
+        }
+
+        try {
+            const res = await fetch(`/funds/${code}/returns?beforeDate=${before}&afterDate=${after}`);
+            const data = await handleResponse(res);
+
+            resultBox.className = "mt-3 text-sm block p-3 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg";
+            resultBox.innerHTML = `
+                    <div class="font-semibold text-xs uppercase tracking-wider text-emerald-700">Calculated Yield</div>
+                    <div class="text-2xl font-black mt-0.5">${data.returns}%</div>
+                    <div class="text-[10px] text-emerald-600 mt-1">${data.fundName} (${data.fundCode})</div>
+                `;
+        } catch (err) {
+            resultBox.className = "mt-3 text-sm block p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg";
+            resultBox.textContent = err.message;
+        }
+    });
+
+    // ─── 4. GET HISTORY CHRONOLOGICAL GRAPH ────────
+    document.getElementById('btnHistory').addEventListener('click', async () => {
+        const code = document.getElementById('historyCode').value.trim();
+        const from = document.getElementById('historyFrom').value;
+        const to = document.getElementById('historyTo').value;
+        const canvas = document.getElementById('historyChart');
+        const placeholder = document.getElementById('chartPlaceholder');
+
+        if(!isinRegex.test(code) || !from || !to) {
+            return alert("Core parameters mismatched. Provide a valid 12 character code.");
+        }
+
+        placeholder.className = "text-slate-400 text-sm text-center animate-pulse block";
+        placeholder.textContent = "Streaming historical datablocks from backend indices...";
+
+        try {
+            const res = await fetch(`/funds/${code}/history?fromDate=${from}&toDate=${to}`);
+            const data = await handleResponse(res);
+
+            if (!data.history || Object.keys(data.history).length === 0) {
+                throw new Error("No historical data points available for this range.");
+            }
+
+            placeholder.classList.add('hidden');
+            canvas.classList.remove('hidden');
+
+            const labels = Object.keys(data.history);
+            const values = Object.values(data.history);
+
+            if(chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `${data.fundName || 'NAV History'} (Code: ${data.fundCode})`,
+                        data: values,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.15,
+                        fill: true,
+                        pointRadius: values.length > 40 ? 0 : 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { callback: (v) => '₹' + v } }
+                    }
+                }
+            });
+
+        } catch (err) {
+            canvas.classList.add('hidden');
+            placeholder.classList.remove('hidden');
+            placeholder.className = "text-red-500 text-sm font-medium";
+            placeholder.textContent = err.message;
+        }
+    });
+</script>
+</body>
+</html>

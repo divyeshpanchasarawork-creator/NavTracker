@@ -7,9 +7,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"scheme_code", "nav_date"})
-)
 public class FundEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
